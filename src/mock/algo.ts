@@ -15,6 +15,7 @@ interface CategoryItemData {
   id: string | number // 二级分类ID:由一级ID+‘-’+数字生成 唯一值
   name: string // 二级分类展示名称
   parentId: string // 一级分类ID
+  parent: boolean // 是否为可嵌入的父节点
   description: any // 组件描述信息
   iconName: string // 使用@ant-design/icons
   nodeComponent: string // 使用常量中定义的 constants.ts\graph.ts-NODECOMPONENT_*
@@ -36,40 +37,11 @@ export const algoData = [
         iconName: '',
         nodeComponent: 'COMPUTER_ROOM',
         parent: true,
-        defSource: 2,
-        docUrl: '',
-        ioType: 0,
-        up: 148,
-        down: 11,
         iconType: 1,
-        isDisabled: false,
-        author: 'demo author',
+        author: 'wangjiangui',
         codeName: 'algo_1',
-        catId: 1,
         lastModifyTime: '2020-08-25 15:43:39',
         createdTime: '2015-04-16 13:38:11',
-        engineType: 0,
-        isComposite: false,
-        sequence: 0,
-        owner: 'system',
-        isBranch: false,
-        social: {
-          defSource: 2,
-          isEnabled: true,
-          docUrl: '#',
-          iconType: 1,
-          isDisabled: false,
-          author: 'demo author',
-          codeName: 'algo_1',
-          catId: 1,
-          lastModifyTime: '2020-08-25 15:43:39',
-          createdTime: '2015-04-16 13:38:11',
-          owner: 'system',
-          description: '机房组件描述信息',
-          name: '机房节点',
-          id: 'frameworkComponent-computer',
-          iconName: '',
-        },
       },
       {
         id: 'frameworkComponent-colony',
