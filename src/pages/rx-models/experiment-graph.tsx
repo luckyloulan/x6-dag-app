@@ -661,9 +661,9 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     const { node }: { node: BaseNode } = args
     const parent = node.getParent()
     const parentData = parent?.getData<any>()
-    if (parentData && !parentData?.isCollapsed) {
-      expandGroupAccordingToNodes({ moveNodes: [node] })
-    }
+    // if (parentData && !parentData?.isCollapsed) {
+    //   expandGroupAccordingToNodes({ moveNodes: [node] })
+    // }
   }
 
   async onMoveNodes(movedNodes: any[]) {

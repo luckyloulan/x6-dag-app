@@ -89,6 +89,10 @@ export class GraphCore<
   // 复制节点的订阅
   private copyNodeSub?: Subscription
 
+  // 节点嵌入
+  ctrlPressed?: false
+  private embeddSub?: Subscription
+
   constructor(options: Options) {
     const { wrapper, container, nodes, edges, ...others } = options
     this.setMeta(options)
@@ -188,6 +192,7 @@ export class GraphCore<
           graph.off('edge:contextmenu', handler)
         },
       )
+
       const graphContextMenuObs = fromEventPattern<ContextMenuInfo>(
         (handler) => {
           graph.on('blank:contextmenu', (data) => {
@@ -351,6 +356,102 @@ export class GraphCore<
             }
             break
           default:
+        }
+      })
+
+      // 节点嵌入事件
+      this.embeddSub = fromEventPattern(
+        (handler) => {
+          graph.on('node:embedding', handler)
+        },
+        (handler) => {
+          graph.on('node:embedded', handler)
+        },
+      ).subscribe((args: any) => {
+        console.log(args)
+        const { e } = args
+        this.ctrlPressed = e.metaKey || e.ctrlKey
+      })
+
+      graph.on('node:change:size', ({ node, options }) => {
+        if (options.skipParentHandler) {
+          return
+        }
+
+        const children = node.getChildren()
+        if (children && children.length) {
+          node.prop('originSize', node.getSize())
+        }
+      })
+      const embedPadding = 20
+      let ctrlPressed = false
+      graph.on('node:change:position', ({ node, options }) => {
+        if (options.skipParentHandler || ctrlPressed) {
+          return
+        }
+
+        const children = node.getChildren()
+        if (children && children.length) {
+          node.prop('originPosition', node.getPosition())
+        }
+
+        const parent = node.getParent()
+        if (parent && parent.isNode()) {
+          let originSize = parent.prop('originSize')
+          if (originSize == null) {
+            originSize = parent.getSize()
+            parent.prop('originSize', originSize)
+          }
+
+          let originPosition = parent.prop('originPosition')
+          if (originPosition == null) {
+            originPosition = parent.getPosition()
+            parent.prop('originPosition', originPosition)
+          }
+
+          let x = originPosition.x
+          let y = originPosition.y
+          let cornerX = originPosition.x + originSize.width
+          let cornerY = originPosition.y + originSize.height
+          let hasChange = false
+
+          const children = parent.getChildren()
+          if (children) {
+            children.forEach((child) => {
+              const bbox = child.getBBox().inflate(embedPadding)
+              const corner = bbox.getCorner()
+
+              if (bbox.x < x) {
+                x = bbox.x
+                hasChange = true
+              }
+
+              if (bbox.y < y) {
+                y = bbox.y
+                hasChange = true
+              }
+
+              if (corner.x > cornerX) {
+                cornerX = corner.x
+                hasChange = true
+              }
+
+              if (corner.y > cornerY) {
+                cornerY = corner.y
+                hasChange = true
+              }
+            })
+          }
+
+          if (hasChange) {
+            parent.prop(
+              {
+                position: { x, y },
+                size: { width: cornerX - x, height: cornerY - y },
+              },
+              { skipParentHandler: true },
+            )
+          }
         }
       })
     } else {
