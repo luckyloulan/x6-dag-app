@@ -18,6 +18,7 @@ import '../common/graph-common/connector'
 
 // group 范围适应内部节点变化
 export function expandGroupAccordingToNodes(params: { moveNodes: BaseNode[] }) {
+  console.log(params)
   // const { moveNodes } = params
   // const parentNodes: BaseNode[] = []
   // moveNodes.forEach((node: BaseNode) => {

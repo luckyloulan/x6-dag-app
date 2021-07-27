@@ -13,7 +13,7 @@ export const ComponentSourceTree: React.FC<Props> = (props) => {
   return (
     <div className={classNames(className, styles.componentSourceTree)}>
       <div className={styles.component}>
-        <SearchInput />
+        {/* <SearchInput /> */}
         <ComponentTree />
       </div>
       <div className={styles.links} />

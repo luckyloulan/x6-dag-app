@@ -9,6 +9,7 @@ import { filter, take } from 'rxjs/operators'
 import { round } from 'lodash-es'
 import produce from 'immer'
 import { ConfigProvider, message, Tooltip } from 'antd'
+import { Graph } from '@antv/x6'
 import {
   RERENDER_EVENT,
   NODECOMPONENT_COMPUTER_ROOM,
@@ -37,7 +38,7 @@ import {
   formatGraphData,
   formatNodeInfoToNodeMeta,
 } from './graph-util'
-import { queryGraph, addNode, copyNode } from '@/mock/graph'
+import { queryGraph, copyNode } from '@/mock/graph'
 import { queryGraphStatus, runGraph, stopGraphRun } from '@/mock/status'
 
 export function parseStatus(data: NExecutionStatus.ExecutionStatus) {
@@ -140,10 +141,8 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
         enabled: true,
         zoomAtMousePosition: true,
         modifiers: 'ctrl',
-        // minScale: 0.3,
-        // maxScale: 3
       },
-      // TODO 没有生效，需要重新定义下面的判断 ----2021年7月24日 22:15:42
+      // 通过给节点添加 data.parent 参数来实现对节点的判断
       embedding: {
         enabled: true,
         findParent({ node }) {
@@ -354,7 +353,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
         projectName: 'sre_mpi_algo_dev',
         gmtCreate: '2020-08-18 02:21:41',
         description: '用户流失数据建模demo',
-        name: '建模流程 DEMO',
+        name: '混沌实验室',
         id: 353355,
       }
       this.experiment$.next(res)
@@ -370,6 +369,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     const graphRes = await queryGraph(experimentId)
     this.experimentGraph$.next(graphRes.data as any)
   }
+
   // 更新图元
   async updateExperimentGraph(
     nodes: NExperimentGraph.Node[] = [],
@@ -386,6 +386,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     })
     this.experimentGraph$.next(newGraph as any)
   }
+
   // 删除图元
   async delExperimentGraphElement(
     nodes: string[] = [],
@@ -478,27 +479,20 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     const { experimentId } = this
     const { data } = nodeMeta
     const { nodeComponent, includedNodes = [] } = data as any
-    // if (nodeComponent === 'node') {
-    //   const node = this.graph!.addNode(
-    //     new X6DemoNode({
-    //       ...nodeMeta,
-    //       shape: 'ais-rect-port',
-    //       component: <NodeElement experimentId={experimentId} />,
-    //     }),
-    //   ) as BaseNode
-    //   if ((nodeMeta.data as any).hide) {
-    //     this.pendingNodes.push(node)
-    //   }
-    //   return node
-    // }
+
     // 机房节点
-    // TODO React Component待新增 ----2021年7月24日 22:23:06
     if (nodeComponent === NODECOMPONENT_COMPUTER_ROOM) {
+      Graph.registerReactComponent(
+        'NodeComputerRoomElement',
+        <NodeComputerRoomElement experimentId={experimentId} />,
+      )
+
       const node = this.graph!.addNode(
         new X6DemoNode({
           ...nodeMeta,
           shape: 'computer-room-rect',
-          component: <NodeComputerRoomElement experimentId={experimentId} />,
+          // component: <NodeComputerRoomElement experimentId={experimentId} />,
+          component: 'NodeComputerRoomElement',
         }),
       ) as BaseNode
       console.log(node)
@@ -508,7 +502,6 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       return node
     }
     // 集群节点
-    // TODO React Component待新增 ----2021年7月24日 22:23:06
     if (nodeComponent === NODECOMPONENT_COLONY) {
       const node = this.graph!.addNode(
         new X6DemoNode({
@@ -523,7 +516,6 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       return node
     }
     // 机器节点
-    // TODO React Component待新增 ----2021年7月24日 22:23:06
     if (nodeComponent === NODECOMPONENT_MACHINE) {
       const node = this.graph!.addNode(
         new X6DemoNode({
@@ -537,20 +529,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       }
       return node
     }
-    // if (nodeComponent === 'group' && includedNodes?.length) {
-    //   const group = this.graph!.addNode(
-    //     new X6DemoGroupNode({
-    //       ...nodeMeta,
-    //       shape: 'react-shape',
-    //       component: <NodeGroup experimentId={experimentId} />,
-    //     }),
-    //   ) as BaseNode
-    //   includedNodes.forEach((normalNode: any) => {
-    //     const targetNode = this.getNodeById(normalNode.id)
-    //     group.addChild(targetNode!)
-    //   })
-    //   return group
-    // }
+
     return undefined
   }
 
@@ -659,16 +638,18 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     }
   }
 
+  // 节点开始移动
   // eslint-disable-next-line class-methods-use-this
   onMoveNodeStart(args: any) {
     const { node }: { node: BaseNode } = args
     const parent = node.getParent()
     const parentData = parent?.getData<any>()
-    if (parentData && !parentData?.isCollapsed) {
-      expandGroupAccordingToNodes({ moveNodes: [node] })
-    }
+    // if (parentData && !parentData?.isCollapsed) {
+    //   expandGroupAccordingToNodes({ moveNodes: [node] })
+    // }
   }
 
+  // 节点移动
   async onMoveNodes(movedNodes: any[]) {
     const targetNodes = movedNodes.filter((arg) => {
       const { node } = arg
@@ -813,18 +794,16 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     clientX: number
     clientY: number
   }) => {
-    console.log('add3', param) // 此时节点还不是图节点
     // eslint-disable-next-line: no-this-assignment
     const { graph } = this
     if (graph) {
       const { nodeMeta, clientX, clientY } = param
       const pos = graph.clientToLocal(clientX, clientY)
-      // alog分类树的节点数据与默认的节点 合并
-      // const nodeRes = await addNode({ ...nodeMeta, ...pos })
+      // 节点数据和位置信息合并
       const nodeRes = await {
         ...nodeMeta,
         ...{
-          id: `${nodeMeta.id}-${Date.now()}`,
+          id: `${nodeMeta.id}-${Date.now()}`, // 生成新的节点 ID
           positionX: pos.x,
           positionY: pos.y,
         },
@@ -836,7 +815,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       const newNode = formatNodeInfoToNodeMeta(nodeRes as any)
       console.log('add4', newNode) // 经过 formatNodeInfoToNodeMeta 处理之后，成为了图节点
       this.addNode(newNode) // graph添加节点方法
-      console.log(this.getCells())
+
       return { success: true }
     }
     return { success: false } as any
@@ -932,6 +911,17 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
 
   tiggerDrawer = (value: boolean) => {
     this.drawerOpen = value
+  }
+
+  // 获取画布上的数据，并存储到后端
+  saveGraphData = () => {
+    const { graph } = this
+
+    if (graph) {
+      // console.log(graph.toJSON())
+
+      return graph.toJSON()
+    }
   }
 
   dispose() {

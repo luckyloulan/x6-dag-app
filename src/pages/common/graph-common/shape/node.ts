@@ -28,22 +28,22 @@ export class X6DemoNode extends BaseNode {
   }
 }
 
-Node.registry.register('ais-rect-port', X6DemoNode as any)
-X6DemoNode.config({
-  width: NODE_WIDTH,
-  height: NODE_HEIGHT,
-  shape: 'ais-rect-port',
-  attrs: {
-    body: {
-      magnet: false,
-      fill: 'none',
-      stroke: 'none',
-      refWidth: '100%',
-      refHeight: '100%',
-      zIndex: 1,
-    },
-  },
-})
+// Node.registry.register('ais-rect-port', X6DemoNode as any)
+// X6DemoNode.config({
+//   width: NODE_WIDTH,
+//   height: NODE_HEIGHT,
+//   shape: 'ais-rect-port',
+//   attrs: {
+//     body: {
+//       magnet: false,
+//       fill: 'none',
+//       stroke: 'none',
+//       refWidth: '100%',
+//       refHeight: '100%',
+//       zIndex: 1,
+//     },
+//   },
+// })
 
 /** 机房节点注册 */
 Node.registry.register('computer-room-rect', X6DemoNode as any)

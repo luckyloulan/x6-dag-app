@@ -33,9 +33,9 @@ export const GuideHeader: React.FC<IProps> = (props) => {
           <ExperimentTitle experimentName={activeExperiment.name} />
         </div>
         <div className={css.headerRight}>
-          <div className={css.doc}>
+          {/* <div className={css.doc}>
             <GithubOutlined onClick={openGithub} />
-          </div>
+          </div> */}
         </div>
       </Header>
     </>

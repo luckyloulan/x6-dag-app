@@ -15,6 +15,7 @@ export const ComponentTree = () => {
   return (
     <div className={styles.componentTree}>
       {keyword ? <SearchResultList /> : <CategoryTree />}
+      {/* {<CategoryTree />} */}
     </div>
   )
 }

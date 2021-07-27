@@ -66,7 +66,12 @@ export const CategoryTree = () => {
         selectable={false}
         autoExpandParent={true}
         className={styles.tree}
-        defaultExpandedKeys={['recentlyUsed']}
+        defaultExpandAll
+        defaultExpandedKeys={[
+          'frameworkComponent',
+          'faultComponent',
+          'sceneComponent',
+        ]}
       >
         {renderTree(treeList)}
       </DirectoryTree>
