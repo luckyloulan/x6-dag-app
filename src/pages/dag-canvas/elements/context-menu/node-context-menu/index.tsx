@@ -15,6 +15,7 @@ import styles from './index.less'
 interface Props {
   experimentId: string
   data: any
+  openDrawer: () => void
 }
 
 export const NodeContextMenu: React.FC<Props> = (props) => {
@@ -47,6 +48,8 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
     expGraph.wrapper!,
   )
 
+  console.log(expGraph)
+
   return (
     <div
       ref={containerRef}
@@ -57,6 +60,13 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
         <Menu.Item onClick={onNodeCopy} icon={<CopyOutlined />} text="复制" />
         <Menu.Item onClick={onNodeDel} icon={<DeleteOutlined />} text="删除" />
         <Menu.Item disabled={true} icon={<EditOutlined />} text="重命名" />
+        {props.data.node.shape !== ' machine-rect' ? (
+          <Menu.Item
+            onClick={props.openDrawer}
+            icon={<EditOutlined />}
+            text="新增场景"
+          />
+        ) : null}
         <Menu.Divider />
         <Menu.Item
           onClick={onGraphRun}

@@ -110,6 +110,9 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
   // 主动触发的重新渲染订阅
   reRenderSub?: Subscription
 
+  // 配置面板展示
+  drawerOpen = false
+
   constructor(expId: string) {
     super({
       grid: {
@@ -925,6 +928,10 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
   // 打开弹窗
   async setModal(params: NExperimentGraph.ModalParams | undefined) {
     this.activeModal$.next(params)
+  }
+
+  tiggerDrawer = (value: boolean) => {
+    this.drawerOpen = value
   }
 
   dispose() {

@@ -11,6 +11,7 @@ import ComponentDrawerPanel from './component-drawer-panel'
 import { DAGCanvas } from './dag-canvas'
 
 import styles from './index.less'
+import { ConsoleSqlOutlined } from '@ant-design/icons'
 
 interface Props extends RouteComponentProps<{ experimentId: string }> {
   experimentId: string
