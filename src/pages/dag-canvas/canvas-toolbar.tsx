@@ -6,6 +6,7 @@ import {
   PlaySquareOutlined,
   RollbackOutlined,
   UngroupOutlined,
+  SaveFilled,
 } from '@ant-design/icons'
 import { useObservableState } from '@/common/hooks/useObservableState'
 import { RxInput } from '@/component/rx-component/rx-input'
@@ -14,6 +15,7 @@ import { addNodeGroup } from '@/mock/graph'
 import { BehaviorSubject } from 'rxjs'
 import { useExperimentGraph } from '@/pages/rx-models/experiment-graph'
 import { formatGroupInfoToNodeMeta } from '@/pages/rx-models/graph-util'
+import { message } from 'antd'
 import styles from './canvas-toolbar.less'
 
 const { Item, Group } = Toolbar
@@ -27,6 +29,7 @@ enum Operations {
   RUN_SELECTED = 'RUN_SELECTED',
   NEW_GROUP = 'NEW_GROUP',
   UNGROUP = 'UNGROUP',
+  SAVE_GRAPH = 'SAVE_GRAPH',
 }
 
 export const CanvasToolbar: React.FC<Props> = (props) => {
@@ -108,6 +111,13 @@ export const CanvasToolbar: React.FC<Props> = (props) => {
           expGraph.unSelectNode()
           break
         }
+        case Operations.SAVE_GRAPH: {
+          const graphData = expGraph.saveGraphData()
+          // TODO 添加RequestAPI
+          console.log(graphData)
+          message.warn("TODO: 等待接入API")
+          break
+        }
         default:
       }
     },
@@ -127,7 +137,7 @@ export const CanvasToolbar: React.FC<Props> = (props) => {
   return (
     <div className={styles.canvasToolbar}>
       <Toolbar hoverEffect={true} onClick={onClickItem}>
-        <Group>
+        {/* <Group>
           <Item
             name={Operations.UNDO_DELETE}
             tooltip="撤销删除节点"
@@ -160,6 +170,13 @@ export const CanvasToolbar: React.FC<Props> = (props) => {
             disabled={!activeNodeInstance}
             tooltip="执行选择节点"
             icon={<PlaySquareOutlined />}
+          />
+        </Group> */}
+        <Group>
+          <Item
+            name={Operations.SAVE_GRAPH}
+            tooltip="保存架构图数据"
+            icon={<SaveFilled />}
           />
         </Group>
       </Toolbar>

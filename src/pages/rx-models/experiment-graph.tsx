@@ -9,6 +9,7 @@ import { filter, take } from 'rxjs/operators'
 import { round } from 'lodash-es'
 import produce from 'immer'
 import { ConfigProvider, message, Tooltip } from 'antd'
+import { Graph } from '@antv/x6'
 import {
   RERENDER_EVENT,
   NODECOMPONENT_COMPUTER_ROOM,
@@ -349,7 +350,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
         projectName: 'sre_mpi_algo_dev',
         gmtCreate: '2020-08-18 02:21:41',
         description: '用户流失数据建模demo',
-        name: '建模流程 DEMO',
+        name: '混沌实验室',
         id: 353355,
       }
       this.experiment$.next(res)
@@ -382,6 +383,7 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     })
     this.experimentGraph$.next(newGraph as any)
   }
+
   // 删除图元
   async delExperimentGraphElement(
     nodes: string[] = [],
@@ -477,11 +479,17 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
 
     // 机房节点
     if (nodeComponent === NODECOMPONENT_COMPUTER_ROOM) {
+      Graph.registerReactComponent(
+        'NodeComputerRoomElement',
+        <NodeComputerRoomElement experimentId={experimentId} />,
+      )
+
       const node = this.graph!.addNode(
         new X6DemoNode({
           ...nodeMeta,
           shape: 'computer-room-rect',
-          component: <NodeComputerRoomElement experimentId={experimentId} />,
+          // component: <NodeComputerRoomElement experimentId={experimentId} />,
+          component: 'NodeComputerRoomElement',
         }),
       ) as BaseNode
       console.log(node)
@@ -896,6 +904,17 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
   // 打开弹窗
   async setModal(params: NExperimentGraph.ModalParams | undefined) {
     this.activeModal$.next(params)
+  }
+
+  // 获取画布上的数据，并存储到后端
+  saveGraphData = () => {
+    const { graph } = this
+
+    if (graph) {
+      // console.log(graph.toJSON())
+
+      return graph.toJSON()
+    }
   }
 
   dispose() {
