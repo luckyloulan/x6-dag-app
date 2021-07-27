@@ -89,10 +89,6 @@ export class GraphCore<
   // 复制节点的订阅
   private copyNodeSub?: Subscription
 
-  // 节点嵌入
-  ctrlPressed?: false
-  private embeddSub?: Subscription
-
   constructor(options: Options) {
     const { wrapper, container, nodes, edges, ...others } = options
     this.setMeta(options)
@@ -360,17 +356,26 @@ export class GraphCore<
       })
 
       // 节点嵌入事件
-      this.embeddSub = fromEventPattern(
-        (handler) => {
-          graph.on('node:embedding', handler)
-        },
-        (handler) => {
-          graph.on('node:embedded', handler)
-        },
-      ).subscribe((args: any) => {
-        console.log(args)
-        const { e } = args
-        this.ctrlPressed = e.metaKey || e.ctrlKey
+      // this.embeddSub = fromEventPattern(
+      //   (handler) => {
+      //     graph.on('node:embedding', handler)
+      //   },
+      //   (handler) => {
+      //     graph.on('node:embedded', handler)
+      //   },
+      // ).subscribe((args: any) => {
+      //   console.log(args)
+      //   const { e } = args
+      //   this.ctrlPressed = e.metaKey || e.ctrlKey
+      // })
+      let ctrlPressed = false
+      let embedPadding = 20
+      graph.on('node:embedding', ({ e }: { e: JQuery.MouseMoveEvent }) => {
+        ctrlPressed = e.metaKey || e.ctrlKey
+      })
+
+      graph.on('node:embedded', () => {
+        ctrlPressed = false
       })
 
       graph.on('node:change:size', ({ node, options }) => {
@@ -383,8 +388,7 @@ export class GraphCore<
           node.prop('originSize', node.getSize())
         }
       })
-      const embedPadding = 20
-      let ctrlPressed = false
+
       graph.on('node:change:position', ({ node, options }) => {
         if (options.skipParentHandler || ctrlPressed) {
           return
@@ -444,6 +448,7 @@ export class GraphCore<
           }
 
           if (hasChange) {
+            console.log(parent)
             parent.prop(
               {
                 position: { x, y },
