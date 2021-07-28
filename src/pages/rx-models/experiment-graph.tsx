@@ -55,6 +55,12 @@ type NodeMeta = ReturnType<typeof formatGraphData>['nodes'][number]
 
 type EdgeMeta = ReturnType<typeof formatGraphData>['edges'][number]
 
+enum NodeZIndex {
+  'computer-room-rect' = 1,
+  'colony-rect' = 2,
+  'machine-rect' = 3,
+}
+
 interface NodeDataMap {
   [nodeInstanceId: string]: NExperimentGraph.Node
 }
@@ -480,30 +486,31 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
     const { data } = nodeMeta
     const { nodeComponent, includedNodes = [] } = data as any
 
+    let node: BaseNode | undefined
+
     // 机房节点
     if (nodeComponent === NODECOMPONENT_COMPUTER_ROOM) {
-      Graph.registerReactComponent(
-        'NodeComputerRoomElement',
-        <NodeComputerRoomElement experimentId={experimentId} />,
-      )
+      // Graph.registerReactComponent(
+      //   'NodeComputerRoomElement',
+      //   <NodeComputerRoomElement experimentId={experimentId} />,
+      // )
 
-      const node = this.graph!.addNode(
+      node = this.graph!.addNode(
         new X6DemoNode({
           ...nodeMeta,
           shape: 'computer-room-rect',
-          // component: <NodeComputerRoomElement experimentId={experimentId} />,
-          component: 'NodeComputerRoomElement',
+          component: <NodeComputerRoomElement experimentId={experimentId} />,
+          // component: 'NodeComputerRoomElement',
         }),
       ) as BaseNode
       console.log(node)
       if ((nodeMeta.data as any).hide) {
         this.pendingNodes.push(node)
       }
-      return node
     }
     // 集群节点
-    if (nodeComponent === NODECOMPONENT_COLONY) {
-      const node = this.graph!.addNode(
+    else if (nodeComponent === NODECOMPONENT_COLONY) {
+      node = this.graph!.addNode(
         new X6DemoNode({
           ...nodeMeta,
           shape: 'colony-rect',
@@ -513,11 +520,10 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       if ((nodeMeta.data as any).hide) {
         this.pendingNodes.push(node)
       }
-      return node
     }
     // 机器节点
-    if (nodeComponent === NODECOMPONENT_MACHINE) {
-      const node = this.graph!.addNode(
+    else if (nodeComponent === NODECOMPONENT_MACHINE) {
+      node = this.graph!.addNode(
         new X6DemoNode({
           ...nodeMeta,
           shape: 'machine-rect',
@@ -527,10 +533,23 @@ class ExperimentGraph extends GraphCore<BaseNode, BaseEdge> {
       if ((nodeMeta.data as any).hide) {
         this.pendingNodes.push(node)
       }
-      return node
     }
 
-    return undefined
+    console.log({
+      nodeComponent,
+      NODECOMPONENT_MACHINE,
+      nodeMeta,
+      node,
+    })
+
+    setTimeout(() => {
+      // 固定创建的节点层级
+      let shapeName: keyof typeof NodeZIndex =
+        node?.shape as keyof typeof NodeZIndex
+      node?.setZIndex(NodeZIndex[shapeName])
+    }, 0)
+
+    return node
   }
 
   afterLayout() {
