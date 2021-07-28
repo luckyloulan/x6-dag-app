@@ -51,11 +51,6 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
     expGraph.wrapper!,
   )
 
-  console.log({
-    props,
-    expGraph,
-  })
-
   const openConfigPanel = () => {
     const machines = expGraph.nodes.filter(
       (item) => item.shape === 'machine-rect',
@@ -75,6 +70,11 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
       robotList: robots,
     })
   }
+
+  console.log('node-context-menu', {
+    props,
+    expGraph,
+  })
 
   return (
     <div
