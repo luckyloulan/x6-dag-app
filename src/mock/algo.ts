@@ -167,7 +167,7 @@ export const algoData = [
     ],
   },
   {
-    name: '其他',
+    name: '执行计划', // 去新页面
     id: 'other',
     category: 'ai_algo',
     isDir: true,
