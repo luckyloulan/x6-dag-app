@@ -8,6 +8,7 @@ import { useExperimentGraph } from '@/pages/rx-models/experiment-graph'
 import { FloatingContextMenu } from './elements/floating-context-menu'
 import { CanvasHandler } from '../common/canvas-handler'
 import { GraphRunningStatus } from './elements/graph-running-status'
+import ComponentDrawerPanel from '@/pages/component-drawer-panel'
 import styles from './canvas-content.less'
 
 interface Props {
@@ -15,12 +16,53 @@ interface Props {
   className?: string
 }
 
+interface IGlobalState {
+  drawerOpen: boolean
+  robotList: Array<any>
+  isEdit: false
+}
+
+//global state
+const globalDataInit: IGlobalState = {
+  drawerOpen: false,
+  isEdit: false,
+  robotList: [],
+}
+
+//React.Dispatch
+interface GlobalReducerProps {
+  globalState: IGlobalState
+  setGlobalState: React.Dispatch<Partial<IGlobalState>>
+}
+
+//更新 global state
+const GlobalReducer = (
+  prevState: IGlobalState,
+  updatedProperty: Partial<IGlobalState>,
+): IGlobalState => ({
+  ...prevState,
+  ...updatedProperty,
+})
+
+//React.createContext
+export const GlobalContext = React.createContext<GlobalReducerProps>({
+  globalState: globalDataInit,
+  setGlobalState: () => {
+    throw new Error('GlobalContext 未定义')
+  },
+})
+
 export const CanvasContent: React.FC<Props> = (props) => {
   const { experimentId, className } = props
 
   const containerRef = useRef<HTMLDivElement | null>(null)
   const canvasRef = useRef<HTMLDivElement | null>(null)
   const expGraph = useExperimentGraph(experimentId)
+
+  const [globalState, setGlobalState] = React.useReducer(
+    GlobalReducer,
+    globalDataInit,
+  )
 
   // 渲染画布
   useEffect(() => {
@@ -78,32 +120,37 @@ export const CanvasContent: React.FC<Props> = (props) => {
   )
 
   return (
-    <div
-      ref={(elem) => {
-        containerRef.current = elem
-        dropRef(elem)
-      }}
-      className={classNames(className, styles.canvasContent)}
-    >
-      {/* 图和边的右键菜单 */}
-      <FloatingContextMenu experimentId={experimentId} />
+    <GlobalContext.Provider value={{ globalState, setGlobalState }}>
+      <div
+        ref={(elem) => {
+          containerRef.current = elem
+          dropRef(elem)
+        }}
+        className={classNames(className, styles.canvasContent)}
+      >
+        {/* 图和边的右键菜单 */}
+        <FloatingContextMenu experimentId={experimentId} />
 
-      {/* 缩放相关的 toolbar */}
-      <CanvasHandler
-        onZoomIn={onHandleSideToolbar('in')}
-        onZoomOut={onHandleSideToolbar('out')}
-        onFitContent={onHandleSideToolbar('fit')}
-        onRealContent={onHandleSideToolbar('real')}
-      />
+        {/* 缩放相关的 toolbar */}
+        <CanvasHandler
+          onZoomIn={onHandleSideToolbar('in')}
+          onZoomOut={onHandleSideToolbar('out')}
+          onFitContent={onHandleSideToolbar('fit')}
+          onRealContent={onHandleSideToolbar('real')}
+        />
 
-      {/* 图运行状态 */}
-      <GraphRunningStatus
-        className={styles.runningStatus}
-        experimentId={experimentId}
-      />
+        {/* 图运行状态 */}
+        <GraphRunningStatus
+          className={styles.runningStatus}
+          experimentId={experimentId}
+        />
 
-      {/* 图容器 */}
-      <div ref={canvasRef} />
-    </div>
+        {/* 图容器 */}
+        <div ref={canvasRef} />
+
+        {/* 配置面板 */}
+        <ComponentDrawerPanel />
+      </div>
+    </GlobalContext.Provider>
   )
 }

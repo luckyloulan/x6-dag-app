@@ -10,6 +10,8 @@ import { useObservableState } from '@/common/hooks/useObservableState'
 import { Menu } from '@antv/x6-react-components'
 import { useExperimentGraph } from '@/pages/rx-models/experiment-graph'
 import { graphPointToOffsetPoint } from '@/pages/common//utils/graph'
+import { GlobalContext } from '@/pages/dag-canvas/canvas-content'
+
 import styles from './index.less'
 
 interface Props {
@@ -25,6 +27,7 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
   const [activeNodeInstance] = useObservableState(
     () => expGraph.activeNodeInstance$,
   )
+  const { setGlobalState } = React.useContext(GlobalContext)
 
   useClickAway(() => {
     expGraph.clearContextMenuInfo()
@@ -48,7 +51,30 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
     expGraph.wrapper!,
   )
 
-  console.log(expGraph)
+  console.log({
+    props,
+    expGraph,
+  })
+
+  const openConfigPanel = () => {
+    const machines = expGraph.nodes.filter(
+      (item) => item.shape === 'machine-rect',
+    )
+    const robots = machines.map((item) => {
+      let data = item.data
+      return {
+        checked: false,
+        description: data.description,
+        nodeId: data.id,
+        name: data.name,
+      }
+    })
+
+    setGlobalState({
+      drawerOpen: true,
+      robotList: robots,
+    })
+  }
 
   return (
     <div
@@ -60,9 +86,14 @@ export const NodeContextMenu: React.FC<Props> = (props) => {
         <Menu.Item onClick={onNodeCopy} icon={<CopyOutlined />} text="复制" />
         <Menu.Item onClick={onNodeDel} icon={<DeleteOutlined />} text="删除" />
         <Menu.Item disabled={true} icon={<EditOutlined />} text="重命名" />
+        <Menu.Item
+          disabled={true}
+          icon={<EditOutlined />}
+          text={props.data.node.shape}
+        />
         {props.data.node.shape !== ' machine-rect' ? (
           <Menu.Item
-            onClick={props.openDrawer}
+            onClick={openConfigPanel}
             icon={<EditOutlined />}
             text="新增场景"
           />

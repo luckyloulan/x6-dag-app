@@ -3,31 +3,10 @@ import clsx from 'clsx'
 import { createStyles, makeStyles, Theme } from '@material-ui/core/styles'
 
 import DrawerContent, { Command } from './DrawerContent'
+import { GlobalContext } from '@/pages/dag-canvas/canvas-content'
 
 // import { saveChaosIssue } from '@/apis/Scenes'
 // import { GlobalContext } from '@/layouts/Main/Main'
-
-export interface DrawerState {
-  id: any
-  name: string // 进程名
-  cmdline: string // 进程启动参数
-  robotList: object[]
-  commands: Command[]
-}
-
-export interface SceneState {
-  type: number
-  status: number
-  strategyDefinition: string
-  scene_name: string
-  robotGroupList: DrawerState[]
-  [param: string]: string | number | DrawerState[]
-}
-
-interface DrawerAction {
-  right: boolean
-  status?: string
-}
 
 export const useStyles = makeStyles((theme: Theme) =>
   createStyles({
@@ -58,6 +37,9 @@ export const useStyles = makeStyles((theme: Theme) =>
     root: {
       boxShadow:
         '0px 2px 1px -1px rgb(0 0 0 / 20%), 0px 1px 1px 0px rgb(0 0 0 / 14%), 0px 2px 6px 0px rgb(0 0 0 / 32%)',
+    },
+    configPanel: {
+      zIndex: `999999 !important`,
     },
 
     table: {
@@ -96,15 +78,29 @@ export const useStyles = makeStyles((theme: Theme) =>
   }),
 )
 
-export type Anchor = 'top' | 'left' | 'bottom' | 'right'
-
-interface Iprops {
-  open: boolean
+export interface DrawerState {
+  id: any
+  scene_name: string
+  strategyDefinition: string
+  name: string // 进程名
+  cmdline: string // 进程启动参数
+  robotList: object[]
+  commands: Command[]
+}
+export interface SceneState {
+  type: number
+  status: number
+  strategyDefinition: string
+  scene_name: string
+  robotGroupList: DrawerState[]
+  [param: string]: string | number | DrawerState[]
 }
 
-const ScenesCustom: React.FC<Iprops> = (props) => {
+export type Anchor = 'top' | 'left' | 'bottom' | 'right'
+
+const ScenesCustom: React.FC = (props) => {
   const classes = useStyles()
-  // const { setGlobalState } = React.useContext(GlobalContext)
+  const { globalState, setGlobalState } = React.useContext(GlobalContext)
 
   const [resLoading, setResLoading] = React.useState(false)
   const [graphData, setGraphData] = React.useState(null)
@@ -123,27 +119,14 @@ const ScenesCustom: React.FC<Iprops> = (props) => {
   const [sceneState, setSceneState] =
     React.useState<SceneState>(sceneStateParam)
   const [drawerData, setDrawerData] = React.useState<DrawerState>({
+    scene_name: '',
+    strategyDefinition: '',
     id: '',
     name: '', // 进程名
     cmdline: '', // 进程启动参数
     robotList: [],
     commands: [],
   })
-
-  const [drawerState, setDrawerState] = React.useState<DrawerAction>({
-    right: true,
-  }) // 弹框状态
-
-  //tigger drawer
-  React.useEffect(() => {
-    setDrawerState((prevState) => {
-      return {
-        ...prevState,
-        right: props.open,
-      }
-    })
-  }, [props.open])
-
   const getContainerSize = () => {
     return {
       width: 600,
@@ -167,19 +150,16 @@ const ScenesCustom: React.FC<Iprops> = (props) => {
     })
   }
 
-  const editHandler = (id: string) => {
-    const editData = sceneState.robotGroupList.find(
-      (item: any) => item.id === id,
-    )
-    if (editData) {
-      setDrawerData(editData)
-      setDrawerState({ ...drawerState, right: true, status: 'edit' })
-    }
-  }
-
-  const toggleDrawer = (open: boolean, status?: string) => {
-    setDrawerState({ ...drawerState, right: open, status: status })
-  }
+  // React.useEffect(() => {
+  //   const editData = sceneState.robotGroupList.find(
+  //     (item: any) => item.id === globalState.editId
+  //   )
+  //   if (editData) {
+  //     setDrawerData(editData)
+  //   }
+  // }, [
+  //   globalState.isEdit, globalState.editId
+  // ])
 
   //save request
   // const submit = () => {
@@ -294,16 +274,7 @@ const ScenesCustom: React.FC<Iprops> = (props) => {
     })
   }
 
-  console.log(drawerData)
-
-  return (
-    <DrawerContent
-      drawerData={drawerData}
-      drawerState={drawerState}
-      toggleDrawer={toggleDrawer}
-      saveCall={saveCall}
-    />
-  )
+  return <DrawerContent drawerData={drawerData} saveCall={saveCall} />
 }
 
 export default ScenesCustom

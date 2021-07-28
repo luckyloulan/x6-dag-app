@@ -18,7 +18,8 @@ import {
 import clsx from 'clsx'
 
 // import { getChaosNodeAll } from '@/apis/Scenes'
-import { Anchor, useStyles, DrawerState } from '.'
+import { Anchor, useStyles, DrawerState } from './index'
+import { GlobalContext } from '@/pages/dag-canvas/canvas-content'
 
 export interface Command {
   command_id: any // 错误状态码
@@ -46,7 +47,11 @@ const SelectOptions = [
 const DrawerContent = (props: any) => {
   const classes = useStyles()
 
-  const { drawerData, drawerState, toggleDrawer, saveCall } = props
+  const { globalState, setGlobalState } = React.useContext(GlobalContext)
+
+  const { drawerData, saveCall } = props
+
+  console.log('drawerContent', { globalState, props })
 
   const command: Command = {
     // command_id: 1, // 错误状态码
@@ -63,6 +68,8 @@ const DrawerContent = (props: any) => {
 
   const initData: DrawerState = {
     id: null,
+    scene_name: '',
+    strategyDefinition: '',
     name: '', // 进程名
     cmdline: '', // 进程启动参数
     robotList: [],
@@ -71,26 +78,36 @@ const DrawerContent = (props: any) => {
 
   const [state, setState] = React.useState<any>(initData)
 
-  React.useEffect(() => {
-    if (drawerState.status === 'edit' && drawerData.id) {
-      let { robotList } = drawerData
-      let checkedRobots = robotList.map((item: any) => item.nodeId)
+  const [robotList, setRobotList] = React.useState<any[]>([])
 
-      setState(drawerData)
-      setRobotList((prevState: any) => {
-        return prevState.map((item: any) => ({
-          ...item,
-          checked: checkedRobots.includes(item.nodeId),
-        }))
-      })
-    } else {
-      setRobotList((prevState: any) => {
-        return prevState.map((item: any) => ({ ...item, checked: false }))
-      })
-    }
-  }, [drawerState.status, drawerData.id])
+  console.log(state)
+
+  React.useEffect(() => {
+    setRobotList(globalState.robotList)
+  }, [globalState.robotList])
+
+  // React.useEffect(() => {
+  //   if (globalState.isEdit && drawerData.id) {
+  //     let { robotList } = drawerData
+  //     let checkedRobots = robotList.map((item: any) => item.nodeId)
+
+  //     setState(drawerData)
+  //     setRobotList((prevState: any) => {
+  //       return prevState.map((item: any) => ({
+  //         ...item,
+  //         checked: checkedRobots.includes(item.nodeId),
+  //       }))
+  //     })
+  //   } else {
+  //     setRobotList((prevState: any) => {
+  //       return prevState.map((item: any) => ({ ...item, checked: false }))
+  //     })
+  //   }
+  // }, [globalState.isEdit, drawerData.id])
 
   const [fieldValidate, setValidate] = React.useState<any>({
+    scene_name: false,
+    strategyDefinition: false,
     name: false,
     cmdline: false,
     robotList: false,
@@ -99,8 +116,6 @@ const DrawerContent = (props: any) => {
     openDate: false,
     endDate: false,
   })
-
-  const [robotList, setRobotList] = React.useState([])
 
   //mount
   // React.useEffect(() => {
@@ -209,6 +224,8 @@ const DrawerContent = (props: any) => {
 
   const save = () => {
     let validateFileds = [
+      'scene_name',
+      'strategyDefinition',
       'name',
       'cmdline',
       'robotList',
@@ -252,12 +269,12 @@ const DrawerContent = (props: any) => {
   const close = () => {
     setState(initData)
     setValidate({})
-    toggleDrawer(false)
+    setGlobalState({
+      drawerOpen: false,
+    })
   }
 
   const focusHandler = (field: string) => (evt: React.SyntheticEvent) => {
-    // let value = evt.target.value
-
     setValidate((prev: any) => {
       return {
         ...prev,
@@ -266,8 +283,25 @@ const DrawerContent = (props: any) => {
     })
   }
 
+  const inputHandler =
+    (field: string) => (event: React.ChangeEvent<HTMLInputElement>) => {
+      let value = event.target.value
+
+      setState((prev: any) => {
+        return {
+          ...prev,
+          [field]: value,
+        }
+      })
+    }
+
   return (
-    <Drawer anchor="right" open={drawerState['right']} onClose={close}>
+    <Drawer
+      className={classes.configPanel}
+      anchor="right"
+      open={globalState.drawerOpen}
+      onClose={close}
+    >
       <Box
         display="flex"
         flexDirection="row"
@@ -280,6 +314,29 @@ const DrawerContent = (props: any) => {
         <Typography variant="h5" gutterBottom>
           标题
         </Typography>
+        {/* 场景说明 */}
+        <TextField
+          error={fieldValidate['scene_name']}
+          className={classes.formControl}
+          label="场景名称"
+          value={state.scene_name}
+          onChange={inputHandler('scene_name')}
+          onFocus={focusHandler('scene_name')}
+          size="small"
+          multiline
+          variant="outlined"
+        />
+        <TextField
+          error={fieldValidate['strategyDefinition']}
+          className={classes.formControl}
+          label="场景说明"
+          value={state.strategyDefinition}
+          onChange={inputHandler('strategyDefinition')}
+          onFocus={focusHandler('strategyDefinition')}
+          size="small"
+          multiline
+          variant="outlined"
+        />
         {/* 服务名 */}
         <TextField
           error={fieldValidate['name']}
@@ -299,7 +356,6 @@ const DrawerContent = (props: any) => {
           label="服务关键启动参数"
           size="small"
           multiline
-          rowsMax={4}
           variant="outlined"
           error={fieldValidate['cmdline']}
           value={state.cmdline}
@@ -316,7 +372,7 @@ const DrawerContent = (props: any) => {
         >
           <FormLabel component="legend">选择机器</FormLabel>
           <FormGroup className={clsx(classes.robotoListGroup)}>
-            {robotList ? (
+            {robotList.length ? (
               robotList.map((robot: any) => (
                 <FormControlLabel
                   key={robot.nodeId}
@@ -328,11 +384,11 @@ const DrawerContent = (props: any) => {
                       onFocus={focusHandler('robotList')}
                     />
                   }
-                  label={robot.sourceIp}
+                  label={robot.name}
                 />
               ))
             ) : (
-              <div>no data</div>
+              <div>节点下暂无机器</div>
             )}
           </FormGroup>
         </FormControl>

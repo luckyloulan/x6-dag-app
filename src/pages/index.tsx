@@ -6,8 +6,6 @@ import { DndProvider } from 'react-dnd'
 import { HTML5Backend } from 'react-dnd-html5-backend'
 import { GuideHeader } from '@/layout/header'
 import { ComponentTreePanel } from './component-tree-panel'
-import { ComponentConfigPanel } from './component-config-panel'
-import ComponentDrawerPanel from './component-drawer-panel'
 import { DAGCanvas } from './dag-canvas'
 
 import styles from './index.less'
@@ -21,8 +19,6 @@ const { Content } = Layout
 
 const DagDemo: React.FC<Props> = (props) => {
   const { experimentId = '1' } = props
-
-  const [drawerOpen, setDrawerOpen] = React.useState(false) // 配置弹框
 
   return (
     <Layout className={styles.layout}>
@@ -43,7 +39,6 @@ const DagDemo: React.FC<Props> = (props) => {
                 experimentId={experimentId}
                 className={styles.confPanel}
               /> */}
-              <ComponentDrawerPanel open={drawerOpen} />
             </div>
           </DndProvider>
         </div>
