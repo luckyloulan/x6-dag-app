@@ -94,7 +94,7 @@ X6DemoNode.config({
       stroke: 'none',
       refWidth: '100%',
       refHeight: '100%',
-      zIndex: 1,
+      zIndex: 3,
     },
   },
 })
